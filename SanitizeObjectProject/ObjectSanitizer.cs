@@ -51,18 +51,26 @@ public static class ObjectSanitizer
             RefCode = "Abc123$"
         };
 
+        Payment paymentIntermediate = new Payment
+        {
+            Amount = new AmountInfo { Amount = 100, Currency = "AZN!" },
+            PaymentDate = new DateTime(2022, 1, 1),
+            Message = "Payment@ from Elg@n",
+            RefCode = "Abc123$"
+        };
+
         Payment payment1 = new Payment
         {
             Amount = new AmountInfo { Amount = 100, Currency = "AZN!" },
             PaymentDate = new DateTime(2022, 1, 1),
             Message = "Payment@ from Elg@n",
-            RefCode = "Abc123$",
-            otherPayment = payment
+            RefCode = "Abc123$"
         };
+        paymentIntermediate.SetOtherPayment(payment);
 
-        payment.otherPayment = payment1;
+        payment1.SetOtherPayment(paymentIntermediate);
         
-        ObjectSanitizer.Sanitize(payment);
+        ObjectSanitizer.Sanitize(payment1);
     }
 }
 
@@ -72,35 +80,26 @@ class Payment
     public DateTime PaymentDate { get; set; }
     public string Message { get; set; }
     public string RefCode { get; set; }
-    public Payment otherPayment { get; set; }
 
-    public override bool Equals(object? obj)
+    private Payment otherPayment;
+
+    public Payment GetOtherPayment()
     {
-        return obj is Payment payment &&
-               EqualityComparer<AmountInfo>.Default.Equals(Amount, payment.Amount);
+        if (otherPayment == null)
+            otherPayment = new Payment();
+        return otherPayment;
     }
 
-    public override int GetHashCode()
+    public void SetOtherPayment(Payment otherPayment)
     {
-        return HashCode.Combine(Amount);
+        this.otherPayment = otherPayment;
     }
+
 }
 
 class AmountInfo
 {
     public double Amount { get; set; }
     public string Currency { get; set; }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is AmountInfo info &&
-               Amount == info.Amount &&
-               Currency == info.Currency;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Amount, Currency);
-    }
 }
 
